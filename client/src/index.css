@@ -1,0 +1,181 @@
+@import 'tailwindcss';
+
+html,
+body,
+#root {
+  height: 100%;
+  margin: 0;
+}
+
+body {
+  background: #070b10;
+  color: #cbd5e1;
+  font-feature-settings: 'tnum' 1;
+}
+
+/* ── Leaflet 深色容器 ── */
+.leaflet-container {
+  background: #070b10;
+}
+
+/* 高德中文瓦片反相为深色模式(暗底亮字,保留中文标注) */
+.cn-dark-tiles {
+  filter: invert(1) hue-rotate(180deg) brightness(0.92) contrast(0.95) saturate(0.85);
+}
+
+/* ── 飞机图标:小而清晰,机身旋转,紧急脉冲圈 ── */
+.plane-icon {
+  background: transparent;
+  border: none;
+}
+.plane-wrap {
+  position: relative;
+  width: 28px;
+  height: 28px;
+}
+.plane-body {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.plane-ring {
+  position: absolute;
+  inset: 3px;
+  border-radius: 9999px;
+  border: 1.5px solid transparent;
+  opacity: 0;
+  pointer-events: none;
+}
+.plane-wrap.is-emergency .plane-ring {
+  border-color: #f43f5e;
+  animation: planePulse 1.2s ease-out infinite;
+}
+@keyframes planePulse {
+  0% {
+    transform: scale(0.6);
+    opacity: 0.9;
+  }
+  70% {
+    transform: scale(2.1);
+    opacity: 0;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
+/* ── 装饰层:细网格 / 角落微辉光 / 缓慢雷达扫描光弧 ── */
+.grid-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 430;
+  pointer-events: none;
+  background-image:
+    linear-gradient(rgba(163, 230, 53, 0.06) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(163, 230, 53, 0.06) 1px, transparent 1px);
+  background-size: 44px 44px;
+  mix-blend-mode: screen;
+}
+.corner-glow {
+  position: absolute;
+  inset: 0;
+  z-index: 420;
+  pointer-events: none;
+  background:
+    radial-gradient(160px 160px at 0% 0%, rgba(163, 230, 53, 0.16), transparent 70%),
+    radial-gradient(160px 160px at 100% 0%, rgba(34, 211, 238, 0.12), transparent 70%),
+    radial-gradient(200px 200px at 0% 100%, rgba(163, 230, 53, 0.12), transparent 70%),
+    radial-gradient(200px 200px at 100% 100%, rgba(34, 211, 238, 0.1), transparent 70%);
+}
+/* 雷达距离环 + 十字准线(静态,即便禁用动画也保留雷达质感) */
+.radar-rings {
+  position: absolute;
+  inset: 0;
+  z-index: 440;
+  pointer-events: none;
+  background:
+    repeating-radial-gradient(
+      circle at 50% 50%,
+      rgba(163, 230, 53, 0.08) 0 1px,
+      transparent 1px 84px
+    ),
+    linear-gradient(
+      to right,
+      transparent calc(50% - 0.5px),
+      rgba(163, 230, 53, 0.08) calc(50% - 0.5px),
+      rgba(163, 230, 53, 0.08) calc(50% + 0.5px),
+      transparent calc(50% + 0.5px)
+    ),
+    linear-gradient(
+      to bottom,
+      transparent calc(50% - 0.5px),
+      rgba(163, 230, 53, 0.08) calc(50% - 0.5px),
+      rgba(163, 230, 53, 0.08) calc(50% + 0.5px),
+      transparent calc(50% + 0.5px)
+    );
+  -webkit-mask: radial-gradient(circle closest-side at 50% 50%, #000 0 99%, transparent 100%);
+  mask: radial-gradient(circle closest-side at 50% 50%, #000 0 99%, transparent 100%);
+  mix-blend-mode: screen;
+}
+/* 缓慢扫描光束:用圆形遮罩裁成圆盘,扇形被圆弧约束(否则会被矩形裁成三角形) */
+.radar-sweep {
+  position: absolute;
+  inset: 0;
+  z-index: 450;
+  pointer-events: none;
+  background: conic-gradient(
+    from 0deg,
+    rgba(163, 230, 53, 0.2) 0deg,
+    rgba(163, 230, 53, 0.06) 16deg,
+    rgba(163, 230, 53, 0) 64deg
+  );
+  -webkit-mask: radial-gradient(circle closest-side at 50% 50%, #000 0 99%, transparent 100%);
+  mask: radial-gradient(circle closest-side at 50% 50%, #000 0 99%, transparent 100%);
+  mix-blend-mode: screen;
+  transform-origin: 50% 50%;
+  animation: radarSweep 6s linear infinite;
+}
+@keyframes radarSweep {
+  to {
+    transform: rotate(360deg);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .plane-wrap.is-emergency .plane-ring {
+    animation: none;
+  }
+  /* 即便用户偏好减少动态,也保留较慢的扫描以体现雷达质感 */
+  .radar-sweep {
+    animation-duration: 14s;
+  }
+}
+
+/* ── 卡片淡入(解说/告警进入) ── */
+@keyframes cardIn {
+  from {
+    opacity: 0;
+    transform: translateY(5px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+.card-in {
+  animation: cardIn 0.35s ease-out both;
+}
+
+/* ── 面板细滚动条 ── */
+.scroll-thin {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(163, 230, 53, 0.3) transparent;
+}
+.scroll-thin::-webkit-scrollbar {
+  width: 6px;
+}
+.scroll-thin::-webkit-scrollbar-thumb {
+  background: rgba(163, 230, 53, 0.25);
+  border-radius: 9999px;
+}
