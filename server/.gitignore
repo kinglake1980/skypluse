@@ -1,0 +1,8 @@
+# 密钥:绝不入库(铁律①)
+.env
+*.env
+!.env.example
+
+node_modules/
+dist/
+*.log
